@@ -111,6 +111,38 @@ def delete_user(user_id):
     del users[user_id]
 
     return jsonify({'message': 'User deleted successfully'}), 200
+@app.route('/predict_house_price', methods = ['POST'])
+def model_call():
+  try:
+    data = request.get_json()
+    model = joblib.load(MODEL_PATH)
+    data = request.json
+    sample_data = [
+    data['city'],
+    data['province'],
+    float(data['latitude']),
+    float(data['longitude']),
+    data['lease_term'],
+    data['type'],
+    float(data['beds']),
+    float(data['baths']),
+    float(data['sq_feet']),
+    data['furnishing'],
+    data['smoking'],
+    data['pets'],
+    data['pets'],
+    ]
+    sample_df = pd.DataFrame([sample_data], columns=[
+    'city', 'province', 'latitude', 'longitude', 'lease_term',
+    'type', 'beds', 'baths', 'sq_feet', 'furnishing',
+    'smoking', 'cats', 'dogs'
+    ])
+    predicted_price = model.predict(sample_df)
+    print(predicted_price)
+  except Exception as e:
+    print(e)
+    return jsonify({"predicted_price": e}), 400
+  return jsonify({"predicted_price": predicted_price[0]}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
